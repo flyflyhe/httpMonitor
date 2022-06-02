@@ -15,6 +15,8 @@ func Monitor(monitorURL string) (result map[string]string, err error) {
 		return
 	}
 
+	proxyArr = append([]string{""}, proxyArr...)
+
 	for _, proxy := range proxyArr {
 		err = send(monitorURL, proxy)
 		if err != nil {

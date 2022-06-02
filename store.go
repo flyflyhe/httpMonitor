@@ -44,6 +44,10 @@ func GetUrlProxyList(monitorURL string) (proxyArr []string, err error) {
 	err = GetDb().View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucketProxyPre + monitorURL))
 
+		if bucket == nil {
+			return nil
+		}
+
 		err := bucket.ForEach(func(k, v []byte) error {
 			proxyArr = append(proxyArr, string(v))
 
