@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 func Monitor(monitorURL string) (result map[string]string, err error) {
@@ -50,6 +51,7 @@ func send(monitorURL string, proxy string) error {
 	//adding the Transport object to the http Client
 	client := &http.Client{
 		Transport: transport,
+		Timeout:   10 * time.Second,
 	}
 
 	res, err := client.Do(request)
