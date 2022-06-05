@@ -10,7 +10,7 @@ import (
 
 func Monitor(monitorURL string) (result map[string]string, err error) {
 	result = make(map[string]string)
-	proxyArr, err := GetUrlProxyList(monitorURL)
+	proxyArr, err := GetByBucket(BucketProxy)
 
 	if err != nil {
 		return

@@ -7,16 +7,16 @@ import (
 	"sync"
 )
 
+const BucketProxy = "bucketProxy"
+const BucketUrl = "bucketUrl"
+
 var (
-	lock           sync.Mutex
-	once           sync.Once
-	db             *bolt.DB
-	err            error
-	bucketProxyPre string
+	once sync.Once
+	db   *bolt.DB
+	err  error
 )
 
 func init() {
-	bucketProxyPre = "bucketProxy"
 	once.Do(func() {
 		db, err = bolt.Open("./monitor.db", os.ModePerm, nil)
 		if err != nil {
@@ -27,11 +27,9 @@ func init() {
 
 //proxy eg socks5:127.0.0.1:9888
 
-func SetUrlProxy(monitorURL string, proxy string) error {
-	lock.Lock()
-	defer lock.Unlock()
+func SetUrlProxy(proxy string) error {
 	return GetDb().Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists([]byte(bucketProxyPre + monitorURL))
+		bucket, err := tx.CreateBucketIfNotExists([]byte(BucketProxy))
 		if err != nil {
 			return err
 		}
@@ -40,17 +38,27 @@ func SetUrlProxy(monitorURL string, proxy string) error {
 	})
 }
 
-func GetUrlProxyList(monitorURL string) (proxyArr []string, err error) {
+func SetUrl(url string) error {
+	return GetDb().Update(func(tx *bolt.Tx) error {
+		bucket, err := tx.CreateBucketIfNotExists([]byte(BucketUrl))
+		if err != nil {
+			return err
+		}
+
+		return bucket.Put([]byte(url), []byte(url))
+	})
+}
+
+func GetByBucket(bucketName string) (arr []string, err error) {
 	err = GetDb().View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(bucketProxyPre + monitorURL))
+		bucket := tx.Bucket([]byte(bucketName))
 
 		if bucket == nil {
 			return nil
 		}
 
 		err := bucket.ForEach(func(k, v []byte) error {
-			proxyArr = append(proxyArr, string(v))
-
+			arr = append(arr, string(v))
 			return nil
 		})
 
@@ -58,6 +66,18 @@ func GetUrlProxyList(monitorURL string) (proxyArr []string, err error) {
 	})
 
 	return
+}
+
+func Delete(bucketName, key string) error {
+	return GetDb().Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(bucketName))
+
+		if bucket == nil {
+			return nil
+		}
+
+		return bucket.Delete([]byte(key))
+	})
 }
 
 func GetDb() *bolt.DB {

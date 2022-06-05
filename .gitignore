@@ -1,3 +1,5 @@
 .vscode
 .idea
 monitor.db
+monitor.db*
+httpMonitor.exe
