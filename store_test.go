@@ -14,18 +14,22 @@ func TestSetUrlProxy(t *testing.T) {
 		t.Error(err)
 	}
 
-	proxyArr, err := GetByBucket(BucketProxy)
-	if err != nil {
-		t.Error(err)
+	result, err := GetByBucketAndKey(BucketProxy, proxy)
+	if result != proxy {
+		t.Errorf("期望%s获得%s", proxy, result)
 	}
 
-	if proxyArr[0] != proxy {
-		t.Error("未获取到正常值")
+	if err = Delete(BucketProxy, proxy); err != nil {
+		t.Errorf(err.Error())
 	}
-
-	fmt.Println(proxyArr[0])
 }
 
 func TestMonitor(t *testing.T) {
-
+	result, err := Monitor(monitoryUrl)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	for k, v := range result {
+		fmt.Println(k, "--", v)
+	}
 }

@@ -68,6 +68,26 @@ func GetByBucket(bucketName string) (arr []string, err error) {
 	return
 }
 
+func GetByBucketAndKey(bucketName, key string) (v string, err error) {
+	err = GetDb().View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(bucketName))
+
+		if bucket == nil {
+			return nil
+		}
+
+		result := bucket.Get([]byte(key))
+
+		if result != nil {
+			v = string(result)
+		}
+
+		return nil
+	})
+
+	return
+}
+
 func Delete(bucketName, key string) error {
 	return GetDb().Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucketName))
