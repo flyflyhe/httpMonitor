@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 )
 
@@ -15,16 +16,27 @@ func Monitor(monitorURL string) (result map[string]string, err error) {
 	if err != nil {
 		return
 	}
-
 	proxyArr = append([]string{""}, proxyArr...)
+	wg := sync.WaitGroup{}
+	wg.Add(len(proxyArr))
 
+	resultChan := make(chan [2]string, len(proxyArr))
 	for _, proxy := range proxyArr {
-		err = send(monitorURL, proxy)
-		if err != nil {
-			result[proxy] = err.Error()
-		} else {
-			result[proxy] = "success"
-		}
+		go func(proxy string) {
+			defer wg.Done()
+			err := send(monitorURL, proxy)
+			msg := "success"
+			if err != nil {
+				msg = err.Error()
+			}
+			resultChan <- [2]string{proxy, msg}
+		}(proxy)
+	}
+
+	wg.Wait()
+	close(resultChan)
+	for v := range resultChan {
+		result[v[0]] = v[1]
 	}
 
 	return

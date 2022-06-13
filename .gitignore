@@ -3,3 +3,4 @@
 monitor.db
 monitor.db*
 httpMonitor.exe
+go_build_httpMonitor_cmd
