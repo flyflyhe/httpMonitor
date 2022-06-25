@@ -1,11 +1,10 @@
-package httpMonitor
+package services
 
 import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
 	"github.com/flyflyhe/httpMonitor/internal/rpc"
-	"github.com/flyflyhe/httpMonitor/internal/services"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"io/ioutil"
@@ -30,7 +29,7 @@ func Start(port string) {
 		grpc.MaxRecvMsgSize(math.MaxInt64))
 
 	//注册服务
-	rpc.RegisterMonitorServiceServer(s, &services.UrlService{})
+	rpc.RegisterUrlServiceServer(s, &UrlService{})
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
@@ -52,7 +51,6 @@ func loadTLSCredentials() (credentials.TransportCredentials, error) {
 		return nil, err
 	}
 
-	// Create the credentials and return it
 	// Create the credentials and return it
 	config := &tls.Config{
 		Certificates: []tls.Certificate{serverCert},

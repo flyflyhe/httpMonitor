@@ -14,7 +14,7 @@ var once sync.Once
 var tw *timewheel.TimeWheel
 
 type UrlService struct {
-	rpc.UnimplementedMonitorServiceServer
+	rpc.UnimplementedUrlServiceServer
 }
 
 func (monitor *UrlService) SetUrl(c context.Context, request *rpc.UrlRequest) (*rpc.UrlResponse, error) {
