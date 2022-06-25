@@ -61,7 +61,6 @@ func TestSimple(t *testing.T) {
 		log.Println(res.StreamValue)
 	}
 
-	time.Sleep(5 * time.Second)
 }
 
 func TestMonitor(t *testing.T) {
@@ -93,18 +92,13 @@ func TestMonitor(t *testing.T) {
 			res, err := monitorStream.Recv()
 
 			if err != nil {
-				if err.Error() == "EOF" {
-					time.Sleep(1 * time.Second)
-					continue
-				}
+				log.Println(err.Error())
 			}
 			// 打印返回值
 			log.Println(res.GetUrl())
 			log.Println(res.GetResult())
 		}
 	}
-
-	time.Sleep(5 * time.Second)
 }
 
 func TestUrlClient(t *testing.T) {

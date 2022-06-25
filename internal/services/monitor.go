@@ -1,32 +1,67 @@
 package services
 
 import (
-	"fmt"
+	"encoding/json"
+	"github.com/flyflyhe/httpMonitor"
 	"github.com/flyflyhe/httpMonitor/internal/rpc"
 	"github.com/rfyiamcool/go-timewheel"
+	"github.com/rs/zerolog/log"
 	"sync"
 	"time"
 )
 
 var once sync.Once
 var tw *timewheel.TimeWheel
+var q chan [2]string
 
 type MonitorServer struct {
 	rpc.UnimplementedMonitorServerServer
 }
 
 func (monitor *MonitorServer) Monitor(req *rpc.MonitorRequest, srv rpc.MonitorServer_MonitorServer) error {
-	fmt.Println(req.GetOperate())
-	for n := 0; n < 5; n++ {
-		// 向流中发送消息， 默认每次send送消息最大长度为`math.MaxInt32`bytes
-		err := srv.Send(&rpc.MonitorResponse{
-			Result: "oo",
-		})
-		if err != nil {
+	q = make(chan [2]string, 10)
+	if tw, err := GetTw(); err != nil {
+		return err
+	} else {
+		if urls, err := httpMonitor.GetAllUrls(); err != nil {
 			return err
+		} else {
+			go func() {
+				for url, interval := range urls {
+					tw.AddCron(time.Duration(int64(interval))*time.Millisecond, func() {
+						if result, err := httpMonitor.Monitor(url); err != nil {
+							log.Debug().Str("line 31", err.Error())
+						} else {
+							resultJson, _ := json.Marshal(result)
+							q <- [2]string{url, string(resultJson)}
+						}
+					})
+				}
+
+				tw.Start()
+			}()
 		}
 	}
-	return nil
+	for {
+		select {
+		case mData := <-q:
+			err := srv.Send(&rpc.MonitorResponse{
+				Result: mData[1],
+				Url:    mData[0],
+			})
+			if err != nil {
+				return err
+			}
+		default:
+			time.Sleep(1 * time.Second)
+			err := srv.Send(&rpc.MonitorResponse{
+				Result: "sleep",
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
 }
 
 func GetTw() (*timewheel.TimeWheel, error) {
