@@ -18,88 +18,115 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// MonitorServiceClient is the client API for MonitorService service.
+// MonitorServerClient is the client API for MonitorServer service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type MonitorServiceClient interface {
-	Monitor(ctx context.Context, in *MonitorRequest, opts ...grpc.CallOption) (*MonitorResponse, error)
+type MonitorServerClient interface {
+	Monitor(ctx context.Context, in *MonitorRequest, opts ...grpc.CallOption) (MonitorServer_MonitorClient, error)
 }
 
-type monitorServiceClient struct {
+type monitorServerClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewMonitorServiceClient(cc grpc.ClientConnInterface) MonitorServiceClient {
-	return &monitorServiceClient{cc}
+func NewMonitorServerClient(cc grpc.ClientConnInterface) MonitorServerClient {
+	return &monitorServerClient{cc}
 }
 
-func (c *monitorServiceClient) Monitor(ctx context.Context, in *MonitorRequest, opts ...grpc.CallOption) (*MonitorResponse, error) {
-	out := new(MonitorResponse)
-	err := c.cc.Invoke(ctx, "/rpc.MonitorService/Monitor", in, out, opts...)
+func (c *monitorServerClient) Monitor(ctx context.Context, in *MonitorRequest, opts ...grpc.CallOption) (MonitorServer_MonitorClient, error) {
+	stream, err := c.cc.NewStream(ctx, &MonitorServer_ServiceDesc.Streams[0], "/rpc.MonitorServer/Monitor", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
-}
-
-// MonitorServiceServer is the server API for MonitorService service.
-// All implementations must embed UnimplementedMonitorServiceServer
-// for forward compatibility
-type MonitorServiceServer interface {
-	Monitor(context.Context, *MonitorRequest) (*MonitorResponse, error)
-	mustEmbedUnimplementedMonitorServiceServer()
-}
-
-// UnimplementedMonitorServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedMonitorServiceServer struct {
-}
-
-func (UnimplementedMonitorServiceServer) Monitor(context.Context, *MonitorRequest) (*MonitorResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Monitor not implemented")
-}
-func (UnimplementedMonitorServiceServer) mustEmbedUnimplementedMonitorServiceServer() {}
-
-// UnsafeMonitorServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to MonitorServiceServer will
-// result in compilation errors.
-type UnsafeMonitorServiceServer interface {
-	mustEmbedUnimplementedMonitorServiceServer()
-}
-
-func RegisterMonitorServiceServer(s grpc.ServiceRegistrar, srv MonitorServiceServer) {
-	s.RegisterService(&MonitorService_ServiceDesc, srv)
-}
-
-func _MonitorService_Monitor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MonitorRequest)
-	if err := dec(in); err != nil {
+	x := &monitorServerMonitorClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
-	if interceptor == nil {
-		return srv.(MonitorServiceServer).Monitor(ctx, in)
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
 	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/rpc.MonitorService/Monitor",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MonitorServiceServer).Monitor(ctx, req.(*MonitorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return x, nil
 }
 
-// MonitorService_ServiceDesc is the grpc.ServiceDesc for MonitorService service.
+type MonitorServer_MonitorClient interface {
+	Recv() (*MonitorResponse, error)
+	grpc.ClientStream
+}
+
+type monitorServerMonitorClient struct {
+	grpc.ClientStream
+}
+
+func (x *monitorServerMonitorClient) Recv() (*MonitorResponse, error) {
+	m := new(MonitorResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// MonitorServerServer is the server API for MonitorServer service.
+// All implementations must embed UnimplementedMonitorServerServer
+// for forward compatibility
+type MonitorServerServer interface {
+	Monitor(*MonitorRequest, MonitorServer_MonitorServer) error
+	mustEmbedUnimplementedMonitorServerServer()
+}
+
+// UnimplementedMonitorServerServer must be embedded to have forward compatible implementations.
+type UnimplementedMonitorServerServer struct {
+}
+
+func (UnimplementedMonitorServerServer) Monitor(*MonitorRequest, MonitorServer_MonitorServer) error {
+	return status.Errorf(codes.Unimplemented, "method Monitor not implemented")
+}
+func (UnimplementedMonitorServerServer) mustEmbedUnimplementedMonitorServerServer() {}
+
+// UnsafeMonitorServerServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to MonitorServerServer will
+// result in compilation errors.
+type UnsafeMonitorServerServer interface {
+	mustEmbedUnimplementedMonitorServerServer()
+}
+
+func RegisterMonitorServerServer(s grpc.ServiceRegistrar, srv MonitorServerServer) {
+	s.RegisterService(&MonitorServer_ServiceDesc, srv)
+}
+
+func _MonitorServer_Monitor_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(MonitorRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(MonitorServerServer).Monitor(m, &monitorServerMonitorServer{stream})
+}
+
+type MonitorServer_MonitorServer interface {
+	Send(*MonitorResponse) error
+	grpc.ServerStream
+}
+
+type monitorServerMonitorServer struct {
+	grpc.ServerStream
+}
+
+func (x *monitorServerMonitorServer) Send(m *MonitorResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+// MonitorServer_ServiceDesc is the grpc.ServiceDesc for MonitorServer service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var MonitorService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "rpc.MonitorService",
-	HandlerType: (*MonitorServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
+var MonitorServer_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "rpc.MonitorServer",
+	HandlerType: (*MonitorServerServer)(nil),
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "Monitor",
-			Handler:    _MonitorService_Monitor_Handler,
+			StreamName:    "Monitor",
+			Handler:       _MonitorServer_Monitor_Handler,
+			ServerStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "internal/rpc/monitor.proto",
 }

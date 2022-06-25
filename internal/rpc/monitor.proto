@@ -3,13 +3,16 @@ package rpc;
 
 option go_package = "internal/rpc";
 
-service MonitorService {
-  rpc Monitor(MonitorRequest) returns (MonitorResponse);
+service MonitorServer {
+  rpc Monitor(MonitorRequest) returns (stream MonitorResponse){};
 }
 
 message MonitorRequest {
+  string operate = 1; //start stop
 }
 
 message MonitorResponse {
+  string url = 1;
+  string result = 2; //result
 }
 

@@ -70,6 +70,26 @@ func GetByBucket(bucketName string) (arr []string, err error) {
 	return
 }
 
+func GetAllUrls() (map[string]int32, error) {
+	m := make(map[string]int32)
+	err = GetDb().View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(BucketUrl))
+
+		if bucket == nil {
+			return nil
+		}
+
+		err := bucket.ForEach(func(k, v []byte) error {
+			m[string(k)] = BytesToInt(v)
+			return nil
+		})
+
+		return err
+	})
+
+	return m, err
+}
+
 func GetByBucketAndKey(bucketName, key string) (v string, err error) {
 	err = GetDb().View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucketName))

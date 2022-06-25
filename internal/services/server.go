@@ -30,6 +30,8 @@ func Start(port string) {
 
 	//注册服务
 	rpc.RegisterUrlServiceServer(s, &UrlService{})
+	rpc.RegisterMonitorServerServer(s, &MonitorServer{})
+	rpc.RegisterStreamServerServer(s, &StreamService{})
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
