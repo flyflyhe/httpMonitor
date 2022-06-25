@@ -62,7 +62,7 @@ func handleArgs() int {
 				err = httpMonitor.Delete(httpMonitor.BucketUrl, v)
 				log.Println("删除url:", v)
 			} else {
-				err = httpMonitor.SetUrl(v)
+				err = httpMonitor.SetUrl(v, int32(*interval))
 				log.Println("添加url:", v)
 			}
 			if err != nil {
