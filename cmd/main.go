@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/flyflyhe/httpMonitor"
 	"github.com/rfyiamcool/go-timewheel"
-	"httpMonitor"
 	"log"
 	"strings"
 	"time"

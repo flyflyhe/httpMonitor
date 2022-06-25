@@ -1,0 +1,26 @@
+syntax = "proto3";
+package rpc;
+
+option go_package = "internal/rpc";
+
+service UrlService {
+  rpc SetUrl(UrlRequest) returns (UrlResponse);
+  rpc SetProxy(ProxyRequest) returns (ProxyResponse);
+}
+
+message UrlRequest {
+  string url = 1;
+  int32 interval = 2;
+}
+
+message UrlResponse {
+  string result = 3;
+}
+
+message ProxyRequest {
+  string proxy = 4;
+}
+
+message ProxyResponse {
+  string result = 5;
+}

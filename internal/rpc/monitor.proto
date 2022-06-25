@@ -1,0 +1,15 @@
+syntax = "proto3";
+package rpc;
+
+option go_package = "internal/rpc";
+
+service MonitorService {
+  rpc Monitor(MonitorRequest) returns (MonitorResponse);
+}
+
+message MonitorRequest {
+}
+
+message MonitorResponse {
+}
+
