@@ -26,6 +26,7 @@ type UrlServiceClient interface {
 	SetUrl(ctx context.Context, in *UrlRequest, opts ...grpc.CallOption) (*UrlResponse, error)
 	SetProxy(ctx context.Context, in *ProxyRequest, opts ...grpc.CallOption) (*ProxyResponse, error)
 	GetAll(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*UrlListResponse, error)
+	GetAllProxy(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*ProxyListResponse, error)
 }
 
 type urlServiceClient struct {
@@ -63,6 +64,15 @@ func (c *urlServiceClient) GetAll(ctx context.Context, in *empty.Empty, opts ...
 	return out, nil
 }
 
+func (c *urlServiceClient) GetAllProxy(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*ProxyListResponse, error) {
+	out := new(ProxyListResponse)
+	err := c.cc.Invoke(ctx, "/rpc.UrlService/GetAllProxy", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UrlServiceServer is the server API for UrlService service.
 // All implementations must embed UnimplementedUrlServiceServer
 // for forward compatibility
@@ -70,6 +80,7 @@ type UrlServiceServer interface {
 	SetUrl(context.Context, *UrlRequest) (*UrlResponse, error)
 	SetProxy(context.Context, *ProxyRequest) (*ProxyResponse, error)
 	GetAll(context.Context, *empty.Empty) (*UrlListResponse, error)
+	GetAllProxy(context.Context, *empty.Empty) (*ProxyListResponse, error)
 	mustEmbedUnimplementedUrlServiceServer()
 }
 
@@ -85,6 +96,9 @@ func (UnimplementedUrlServiceServer) SetProxy(context.Context, *ProxyRequest) (*
 }
 func (UnimplementedUrlServiceServer) GetAll(context.Context, *empty.Empty) (*UrlListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAll not implemented")
+}
+func (UnimplementedUrlServiceServer) GetAllProxy(context.Context, *empty.Empty) (*ProxyListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllProxy not implemented")
 }
 func (UnimplementedUrlServiceServer) mustEmbedUnimplementedUrlServiceServer() {}
 
@@ -153,6 +167,24 @@ func _UrlService_GetAll_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UrlService_GetAllProxy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UrlServiceServer).GetAllProxy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.UrlService/GetAllProxy",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UrlServiceServer).GetAllProxy(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UrlService_ServiceDesc is the grpc.ServiceDesc for UrlService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -171,6 +203,10 @@ var UrlService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAll",
 			Handler:    _UrlService_GetAll_Handler,
+		},
+		{
+			MethodName: "GetAllProxy",
+			Handler:    _UrlService_GetAllProxy_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

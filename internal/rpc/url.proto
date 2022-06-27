@@ -10,6 +10,7 @@ service UrlService {
   rpc SetUrl(UrlRequest) returns (UrlResponse);
   rpc SetProxy(ProxyRequest) returns (ProxyResponse);
   rpc GetAll(google.protobuf.Empty) returns (UrlListResponse);
+  rpc GetAllProxy(google.protobuf.Empty) returns (ProxyListResponse);
 }
 
 message UrlRequest {
@@ -31,4 +32,8 @@ message ProxyRequest {
 
 message ProxyResponse {
   string result = 1;
+}
+
+message ProxyListResponse {
+  repeated string proxyList = 1;
 }

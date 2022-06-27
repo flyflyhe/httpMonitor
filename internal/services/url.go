@@ -38,3 +38,12 @@ func (monitor *UrlService) GetAll(c context.Context, _ *empty.Empty) (*rpc.UrlLi
 		return &rpc.UrlListResponse{Urls: urlList}, nil
 	}
 }
+
+func (monitor *UrlService) GetAllProxy(c context.Context, _ *empty.Empty) (*rpc.ProxyListResponse, error) {
+	if proxyList, err := httpMonitor.GetAllProxyList(); err != nil {
+		log.Error().Caller().Msg(err.Error())
+		return &rpc.ProxyListResponse{}, err
+	} else {
+		return &rpc.ProxyListResponse{ProxyList: proxyList}, nil
+	}
+}

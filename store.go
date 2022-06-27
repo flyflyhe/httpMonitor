@@ -96,6 +96,10 @@ func GetAllUrls() (map[string]int32, error) {
 	return m, err
 }
 
+func GetAllProxyList() (arr []string, err error) {
+	return GetByBucket(BucketProxy)
+}
+
 func GetByBucketAndKey(bucketName, key string) (v string, err error) {
 	err = GetDb().View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucketName))
