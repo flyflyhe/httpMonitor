@@ -5,6 +5,7 @@ go 1.18
 require (
 	fyne.io/fyne/v2 v2.2.1
 	github.com/boltdb/bolt v1.3.1
+	github.com/golang/protobuf v1.5.2
 	github.com/rfyiamcool/go-timewheel v1.1.0
 	github.com/rs/zerolog v1.27.0
 	google.golang.org/grpc v1.47.0
@@ -12,7 +13,6 @@ require (
 )
 
 require (
-	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect

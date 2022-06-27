@@ -22,28 +22,45 @@ var MonitorStart bool
 
 type MonitorServer struct {
 	rpc.UnimplementedMonitorServerServer
-	q     chan [2]string
-	stop  chan struct{}
-	start bool
-	tw    *timewheel.TimeWheel
-	tasks map[string]*timewheel.Task
+	q        chan [2]string
+	stopChan chan struct{}
+	running  bool
+	tw       *timewheel.TimeWheel
+	tasks    map[string]*timewheel.Task
 }
 
-func (monitor *MonitorServer) Start(req *rpc.MonitorRequest, srv rpc.MonitorServer_StartServer) error {
+func (monitor *MonitorServer) start() error {
 	var err error
-	if !monitor.start {
+	if !monitor.running {
 		monitor.tw, err = timewheel.NewTimeWheel(1*time.Second, 360)
 		if err != nil {
 			return err
 		}
 		monitor.q = make(chan [2]string, 10)
-		monitor.stop = make(chan struct{})
-		monitor.start = true
+		monitor.stopChan = make(chan struct{})
+		monitor.running = true
 		monitor.tasks = make(map[string]*timewheel.Task)
 		MonitorStart = true
 		MonitorTaskChan = make(chan *MonitorTask, 10)
 	}
 
+	return nil
+}
+
+func (monitor *MonitorServer) stop() error {
+	monitor.tw.Stop()
+	monitor.running = false
+	MonitorStart = false
+	close(monitor.q)
+	close(monitor.stopChan)
+	close(MonitorTaskChan)
+	return nil
+}
+
+func (monitor *MonitorServer) Start(req *rpc.MonitorRequest, srv rpc.MonitorServer_StartServer) error {
+	if err := monitor.start(); err != nil {
+		return err
+	}
 	addTaskFunc := func(url string) {
 		if result, err := httpMonitor.Monitor(url); err != nil {
 			log.Debug().Str("line 31", err.Error()).Send()
@@ -94,15 +111,9 @@ func (monitor *MonitorServer) Start(req *rpc.MonitorRequest, srv rpc.MonitorServ
 				monitor.tasks[urlReq.Url] = task
 			}
 
-		case <-monitor.stop:
+		case <-monitor.stopChan:
 			log.Debug().Caller().Uint32("address", uint32(uintptr(unsafe.Pointer(monitor)))).Msg("收到stop信号")
-			monitor.tw.Stop()
-			monitor.start = false
-			MonitorStart = false
-			close(monitor.q)
-			close(monitor.stop)
-			close(MonitorTaskChan)
-			return nil
+			return monitor.stop()
 		default:
 			time.Sleep(1 * time.Second) //防止频繁发送
 			err := srv.Send(&rpc.MonitorResponse{
@@ -116,8 +127,8 @@ func (monitor *MonitorServer) Start(req *rpc.MonitorRequest, srv rpc.MonitorServ
 }
 
 func (monitor *MonitorServer) Stop(_ context.Context, _ *empty.Empty) (*empty.Empty, error) {
-	if monitor.start {
-		monitor.stop <- struct{}{}
+	if monitor.running {
+		monitor.stopChan <- struct{}{}
 	}
 	log.Debug().Caller().Uint32("address", uint32(uintptr(unsafe.Pointer(monitor)))).Msg("stop ")
 	return &empty.Empty{}, nil
