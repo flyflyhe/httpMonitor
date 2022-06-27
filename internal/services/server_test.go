@@ -21,14 +21,14 @@ func TestSimple(t *testing.T) {
 	time.Sleep(2 * time.Second) //等待服务启动
 	tlsCredentials, err := loadClientTLSCredentials()
 	if err != nil {
-		log.Fatal("cannot load TLS credentials: ", err)
+		t.Fatal("cannot load TLS credentials: ", err)
 	}
 	if err != nil {
-		log.Fatalf("credentials.NewClientTLSFromFile err: %v", err)
+		t.Fatalf("credentials.NewClientTLSFromFile err: %v", err)
 	}
 	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(tlsCredentials))
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		t.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
 
@@ -40,7 +40,7 @@ func TestSimple(t *testing.T) {
 	// 调用我们的服务(ListValue方法)
 	stream, err := grpcClient.ListValue(context.Background(), &req)
 	if err != nil {
-		log.Fatalf("Call ListStr err: %v", err)
+		t.Fatalf("Call ListStr err: %v", err)
 	}
 	for {
 		//Recv() 方法接收服务端消息，默认每次Recv()最大消息长度为`1024*1024*4`bytes(4M)
@@ -50,11 +50,13 @@ func TestSimple(t *testing.T) {
 			break
 		}
 		if err != nil {
-			log.Fatalf("ListStr get stream err: %v", err)
+			t.Fatalf("ListStr get stream err: %v", err)
 		}
 		// 打印返回值
-		log.Println(res.StreamValue)
+		t.Log(res.StreamValue, "\n")
 	}
+
+	time.Sleep(5 * time.Second)
 
 }
 
