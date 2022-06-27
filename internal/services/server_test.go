@@ -89,6 +89,10 @@ func TestMonitor(t *testing.T) {
 			if i == 5 {
 				urlRpcClient.SetUrl(context.Background(), &rpc.UrlRequest{Url: "https://www.zhihu.com", Interval: 1000})
 			}
+
+			if i == 10 {
+				urlRpcClient.DeleteUrl(context.Background(), &rpc.UrlRequest{Url: "https://www.zhihu.com"})
+			}
 			//Recv() 方法接收服务端消息，默认每次Recv()最大消息长度为`1024*1024*4`bytes(4M)
 			res, err := monitorStream.Recv()
 

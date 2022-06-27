@@ -80,13 +80,14 @@ func (monitor *MonitorServer) Start(req *rpc.MonitorRequest, srv rpc.MonitorServ
 				return err
 			}
 		case urlReq := <-MonitorTaskChan:
-			log.Debug().Caller().Msg("add task" + urlReq.String())
 			if lastTask, ok := monitor.tasks[urlReq.Url]; ok {
 				if err := monitor.tw.Remove(lastTask); err != nil {
 					log.Error().Caller().Msg(err.Error())
 				}
+				log.Debug().Caller().Msg("remove task" + urlReq.String())
 			}
 			if urlReq.IsAdd {
+				log.Debug().Caller().Msg("add task" + urlReq.String())
 				task := monitor.tw.AddCron(time.Duration(urlReq.Interval)*time.Millisecond, func() {
 					addTaskFunc(urlReq.Url)
 				})
