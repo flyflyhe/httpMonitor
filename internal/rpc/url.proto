@@ -1,11 +1,15 @@
 syntax = "proto3";
 package rpc;
 
+import "google/protobuf/empty.proto";
+
 option go_package = "internal/rpc";
+
 
 service UrlService {
   rpc SetUrl(UrlRequest) returns (UrlResponse);
   rpc SetProxy(ProxyRequest) returns (ProxyResponse);
+  rpc GetAll(google.protobuf.Empty) returns (UrlListResponse);
 }
 
 message UrlRequest {
@@ -14,13 +18,17 @@ message UrlRequest {
 }
 
 message UrlResponse {
-  string result = 3;
+  string result = 1;
+}
+
+message UrlListResponse {
+  repeated string urls = 1;
 }
 
 message ProxyRequest {
-  string proxy = 4;
+  string proxy = 1;
 }
 
 message ProxyResponse {
-  string result = 5;
+  string result = 1;
 }
