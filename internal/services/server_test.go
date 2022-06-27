@@ -67,33 +67,45 @@ func TestMonitor(t *testing.T) {
 	time.Sleep(2 * time.Second) //等待服务启动
 	tlsCredentials, err := loadClientTLSCredentials()
 	if err != nil {
-		log.Fatal("cannot load TLS credentials: ", err)
+		t.Fatal("cannot load TLS credentials: ", err)
 	}
 	if err != nil {
-		log.Fatalf("credentials.NewClientTLSFromFile err: %v", err)
+		t.Fatalf("credentials.NewClientTLSFromFile err: %v", err)
 	}
 	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(tlsCredentials))
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		t.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
 
-	ctx := context.Background()
 	rpcClient := rpc.NewMonitorServerClient(conn)
-	monitorStream, err := rpcClient.Monitor(ctx, &rpc.MonitorRequest{Operate: "start"})
+	urlRpcClient := rpc.NewUrlServiceClient(conn)
+	monitorStream, err := rpcClient.Start(context.Background(), &rpc.MonitorRequest{Operate: "start"})
 	if err != nil {
-		log.Println(err)
+		t.Log(err)
 	} else {
+		i := 0
 		for {
+			if i == 5 {
+				urlRpcClient.SetUrl(context.Background(), &rpc.UrlRequest{Url: "https://www.zhihu.com", Interval: 1000})
+			}
 			//Recv() 方法接收服务端消息，默认每次Recv()最大消息长度为`1024*1024*4`bytes(4M)
 			res, err := monitorStream.Recv()
 
 			if err != nil {
-				log.Println(err.Error())
+				t.Log(err.Error())
+				break
 			}
+
+			if err == io.EOF {
+				t.Log("break")
+				break
+			}
+
 			// 打印返回值
-			log.Println(res.GetUrl())
-			log.Println(res.GetResult())
+			t.Log(res.GetUrl())
+			t.Log(res.GetResult())
+			i++
 		}
 	}
 }

@@ -1,10 +1,13 @@
 syntax = "proto3";
 package rpc;
 
+import "google/protobuf/empty.proto";
+
 option go_package = "internal/rpc";
 
 service MonitorServer {
-  rpc Monitor(MonitorRequest) returns (stream MonitorResponse){};
+  rpc Start(MonitorRequest) returns (stream MonitorResponse){};
+  rpc Stop(google.protobuf.Empty) returns (google.protobuf.Empty){};
 }
 
 message MonitorRequest {

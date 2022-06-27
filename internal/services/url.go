@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/flyflyhe/httpMonitor"
 	"github.com/flyflyhe/httpMonitor/internal/rpc"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -13,7 +14,17 @@ type UrlService struct {
 }
 
 func (monitor *UrlService) SetUrl(c context.Context, request *rpc.UrlRequest) (*rpc.UrlResponse, error) {
+	defer func() {
+		if err := recover(); err != nil {
+			errMsg, _ := json.Marshal(err)
+			log.Error().Caller().Msg(string(errMsg))
+		}
+	}()
+
 	err := httpMonitor.SetUrl(request.GetUrl(), request.GetInterval())
+	if MonitorStart && MonitorTaskChan != nil {
+		MonitorTaskChan <- request
+	}
 	return &rpc.UrlResponse{Result: "ok"}, err
 }
 
