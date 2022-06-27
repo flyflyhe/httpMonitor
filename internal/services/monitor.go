@@ -12,7 +12,12 @@ import (
 	"unsafe"
 )
 
-var MonitorTaskChan chan *rpc.UrlRequest
+type MonitorTask struct {
+	*rpc.UrlRequest
+	IsAdd bool
+}
+
+var MonitorTaskChan chan *MonitorTask
 var MonitorStart bool
 
 type MonitorServer struct {
@@ -21,6 +26,7 @@ type MonitorServer struct {
 	stop  chan struct{}
 	start bool
 	tw    *timewheel.TimeWheel
+	tasks map[string]*timewheel.Task
 }
 
 func (monitor *MonitorServer) Start(req *rpc.MonitorRequest, srv rpc.MonitorServer_StartServer) error {
@@ -33,8 +39,9 @@ func (monitor *MonitorServer) Start(req *rpc.MonitorRequest, srv rpc.MonitorServ
 		monitor.q = make(chan [2]string, 10)
 		monitor.stop = make(chan struct{})
 		monitor.start = true
+		monitor.tasks = make(map[string]*timewheel.Task)
 		MonitorStart = true
-		MonitorTaskChan = make(chan *rpc.UrlRequest, 10)
+		MonitorTaskChan = make(chan *MonitorTask, 10)
 	}
 
 	addTaskFunc := func(url string) {
@@ -52,9 +59,11 @@ func (monitor *MonitorServer) Start(req *rpc.MonitorRequest, srv rpc.MonitorServ
 		go func() {
 			for url, interval := range urls {
 				//addCron 返回task 如果想加删除功能 需要保存url 与 task的关系
-				monitor.tw.AddCron(time.Duration(interval)*time.Millisecond, func() {
+				task := monitor.tw.AddCron(time.Duration(interval)*time.Millisecond, func() {
 					addTaskFunc(url)
 				})
+
+				monitor.tasks[url] = task
 			}
 
 			monitor.tw.Start()
@@ -70,11 +79,20 @@ func (monitor *MonitorServer) Start(req *rpc.MonitorRequest, srv rpc.MonitorServ
 			if err != nil {
 				return err
 			}
-		case task := <-MonitorTaskChan:
-			log.Debug().Caller().Msg("add task" + task.String())
-			monitor.tw.AddCron(time.Duration(task.Interval)*time.Millisecond, func() {
-				addTaskFunc(task.Url)
-			})
+		case urlReq := <-MonitorTaskChan:
+			log.Debug().Caller().Msg("add task" + urlReq.String())
+			if lastTask, ok := monitor.tasks[urlReq.Url]; ok {
+				if err := monitor.tw.Remove(lastTask); err != nil {
+					log.Error().Caller().Msg(err.Error())
+				}
+			}
+			if urlReq.IsAdd {
+				task := monitor.tw.AddCron(time.Duration(urlReq.Interval)*time.Millisecond, func() {
+					addTaskFunc(urlReq.Url)
+				})
+				monitor.tasks[urlReq.Url] = task
+			}
+
 		case <-monitor.stop:
 			log.Debug().Caller().Uint32("address", uint32(uintptr(unsafe.Pointer(monitor)))).Msg("收到stop信号")
 			monitor.tw.Stop()

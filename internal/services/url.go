@@ -23,14 +23,22 @@ func (monitor *UrlService) SetUrl(c context.Context, request *rpc.UrlRequest) (*
 
 	err := httpMonitor.SetUrl(request.GetUrl(), request.GetInterval())
 	if MonitorStart && MonitorTaskChan != nil {
-		MonitorTaskChan <- request
+		MonitorTaskChan <- &MonitorTask{request, true}
 	}
 	return &rpc.UrlResponse{Result: "ok"}, err
 }
 
 func (monitor *UrlService) DeleteUrl(c context.Context, request *rpc.UrlRequest) (*rpc.UrlResponse, error) {
+	defer func() {
+		if err := recover(); err != nil {
+			errMsg, _ := json.Marshal(err)
+			log.Error().Caller().Msg(string(errMsg))
+		}
+	}()
 	err := httpMonitor.DeleteUrl(request.Url)
-
+	if MonitorStart && MonitorTaskChan != nil {
+		MonitorTaskChan <- &MonitorTask{request, false}
+	}
 	return &rpc.UrlResponse{Result: "ok"}, err
 }
 
