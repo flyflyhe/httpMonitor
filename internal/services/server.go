@@ -1,13 +1,8 @@
 package services
 
 import (
-	"crypto/tls"
-	"crypto/x509"
-	"fmt"
 	"github.com/flyflyhe/httpMonitor/internal/rpc"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	"io/ioutil"
 	"log"
 	"math"
 	"net"
@@ -35,30 +30,4 @@ func Start(port string) {
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
-}
-
-func loadTLSCredentials() (credentials.TransportCredentials, error) {
-	pemClientCA, err := ioutil.ReadFile("cert/root.pem")
-	if err != nil {
-		return nil, err
-	}
-
-	certPool := x509.NewCertPool()
-	if !certPool.AppendCertsFromPEM(pemClientCA) {
-		return nil, fmt.Errorf("failed to add client CA's certificate")
-	}
-	// Load server's certificate and private key
-	serverCert, err := tls.LoadX509KeyPair("cert/cert.pem", "cert/private.key")
-	if err != nil {
-		return nil, err
-	}
-
-	// Create the credentials and return it
-	config := &tls.Config{
-		Certificates: []tls.Certificate{serverCert},
-		ClientAuth:   tls.RequireAndVerifyClientCert,
-		ClientCAs:    certPool,
-	}
-
-	return credentials.NewTLS(config), nil
 }

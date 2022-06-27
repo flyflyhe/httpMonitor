@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"github.com/boltdb/bolt"
+	"github.com/rs/zerolog/log"
 	"os"
 	"sync"
 )
@@ -20,7 +21,12 @@ var (
 
 func init() {
 	once.Do(func() {
-		db, err = bolt.Open("./monitor.db", os.ModePerm, nil)
+		path, err := os.Getwd()
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+		log.Debug().Str("store.path", path).Send()
+		db, err = bolt.Open(path+string(os.PathSeparator)+"monitor.db", os.ModePerm, nil)
 		if err != nil {
 			panic(err)
 		}

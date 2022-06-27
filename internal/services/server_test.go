@@ -2,14 +2,9 @@ package services
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
-	"fmt"
 	"github.com/flyflyhe/httpMonitor/internal/rpc"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 	"io"
-	"io/ioutil"
 	"log"
 	"testing"
 	"time"
@@ -129,32 +124,4 @@ func TestUrlClient(t *testing.T) {
 	}
 
 	time.Sleep(2 * time.Second)
-}
-
-func loadClientTLSCredentials() (credentials.TransportCredentials, error) {
-	// Load certificate of the CA who signed server's certificate
-	pemServerCA, err := ioutil.ReadFile("cert/root.pem")
-	if err != nil {
-		return nil, err
-	}
-
-	certPool := x509.NewCertPool()
-	if !certPool.AppendCertsFromPEM(pemServerCA) {
-		return nil, fmt.Errorf("failed to add server CA's certificate")
-	}
-
-	// Load client's certificate and private key
-	clientCert, err := tls.LoadX509KeyPair("cert/client_cert.pem", "cert/client_private.pem")
-	if err != nil {
-		return nil, err
-	}
-
-	// Create the credentials and return it
-	config := &tls.Config{
-		ServerName:   "test.com", //生成的证书通用名称 必须一致
-		Certificates: []tls.Certificate{clientCert},
-		RootCAs:      certPool,
-	}
-
-	return credentials.NewTLS(config), nil
 }
