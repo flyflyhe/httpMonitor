@@ -76,6 +76,14 @@ func GetByBucket(bucketName string) (arr []string, err error) {
 	return
 }
 
+func DeleteUrl(key string) error {
+	return Delete(BucketUrl, key)
+}
+
+func DeleteProxy(key string) error {
+	return Delete(BucketProxy, key)
+}
+
 func GetAllUrls() (map[string]int32, error) {
 	m := make(map[string]int32)
 	err = GetDb().View(func(tx *bolt.Tx) error {

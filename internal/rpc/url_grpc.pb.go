@@ -24,9 +24,11 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UrlServiceClient interface {
 	SetUrl(ctx context.Context, in *UrlRequest, opts ...grpc.CallOption) (*UrlResponse, error)
-	SetProxy(ctx context.Context, in *ProxyRequest, opts ...grpc.CallOption) (*ProxyResponse, error)
 	GetAll(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*UrlListResponse, error)
+	DeleteUrl(ctx context.Context, in *UrlRequest, opts ...grpc.CallOption) (*UrlResponse, error)
+	SetProxy(ctx context.Context, in *ProxyRequest, opts ...grpc.CallOption) (*ProxyResponse, error)
 	GetAllProxy(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*ProxyListResponse, error)
+	DeleteProxy(ctx context.Context, in *ProxyRequest, opts ...grpc.CallOption) (*ProxyResponse, error)
 }
 
 type urlServiceClient struct {
@@ -46,18 +48,27 @@ func (c *urlServiceClient) SetUrl(ctx context.Context, in *UrlRequest, opts ...g
 	return out, nil
 }
 
-func (c *urlServiceClient) SetProxy(ctx context.Context, in *ProxyRequest, opts ...grpc.CallOption) (*ProxyResponse, error) {
-	out := new(ProxyResponse)
-	err := c.cc.Invoke(ctx, "/rpc.UrlService/SetProxy", in, out, opts...)
+func (c *urlServiceClient) GetAll(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*UrlListResponse, error) {
+	out := new(UrlListResponse)
+	err := c.cc.Invoke(ctx, "/rpc.UrlService/GetAll", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *urlServiceClient) GetAll(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*UrlListResponse, error) {
-	out := new(UrlListResponse)
-	err := c.cc.Invoke(ctx, "/rpc.UrlService/GetAll", in, out, opts...)
+func (c *urlServiceClient) DeleteUrl(ctx context.Context, in *UrlRequest, opts ...grpc.CallOption) (*UrlResponse, error) {
+	out := new(UrlResponse)
+	err := c.cc.Invoke(ctx, "/rpc.UrlService/DeleteUrl", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *urlServiceClient) SetProxy(ctx context.Context, in *ProxyRequest, opts ...grpc.CallOption) (*ProxyResponse, error) {
+	out := new(ProxyResponse)
+	err := c.cc.Invoke(ctx, "/rpc.UrlService/SetProxy", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -73,14 +84,25 @@ func (c *urlServiceClient) GetAllProxy(ctx context.Context, in *empty.Empty, opt
 	return out, nil
 }
 
+func (c *urlServiceClient) DeleteProxy(ctx context.Context, in *ProxyRequest, opts ...grpc.CallOption) (*ProxyResponse, error) {
+	out := new(ProxyResponse)
+	err := c.cc.Invoke(ctx, "/rpc.UrlService/DeleteProxy", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UrlServiceServer is the server API for UrlService service.
 // All implementations must embed UnimplementedUrlServiceServer
 // for forward compatibility
 type UrlServiceServer interface {
 	SetUrl(context.Context, *UrlRequest) (*UrlResponse, error)
-	SetProxy(context.Context, *ProxyRequest) (*ProxyResponse, error)
 	GetAll(context.Context, *empty.Empty) (*UrlListResponse, error)
+	DeleteUrl(context.Context, *UrlRequest) (*UrlResponse, error)
+	SetProxy(context.Context, *ProxyRequest) (*ProxyResponse, error)
 	GetAllProxy(context.Context, *empty.Empty) (*ProxyListResponse, error)
+	DeleteProxy(context.Context, *ProxyRequest) (*ProxyResponse, error)
 	mustEmbedUnimplementedUrlServiceServer()
 }
 
@@ -91,14 +113,20 @@ type UnimplementedUrlServiceServer struct {
 func (UnimplementedUrlServiceServer) SetUrl(context.Context, *UrlRequest) (*UrlResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetUrl not implemented")
 }
-func (UnimplementedUrlServiceServer) SetProxy(context.Context, *ProxyRequest) (*ProxyResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetProxy not implemented")
-}
 func (UnimplementedUrlServiceServer) GetAll(context.Context, *empty.Empty) (*UrlListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAll not implemented")
 }
+func (UnimplementedUrlServiceServer) DeleteUrl(context.Context, *UrlRequest) (*UrlResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteUrl not implemented")
+}
+func (UnimplementedUrlServiceServer) SetProxy(context.Context, *ProxyRequest) (*ProxyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetProxy not implemented")
+}
 func (UnimplementedUrlServiceServer) GetAllProxy(context.Context, *empty.Empty) (*ProxyListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllProxy not implemented")
+}
+func (UnimplementedUrlServiceServer) DeleteProxy(context.Context, *ProxyRequest) (*ProxyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteProxy not implemented")
 }
 func (UnimplementedUrlServiceServer) mustEmbedUnimplementedUrlServiceServer() {}
 
@@ -131,24 +159,6 @@ func _UrlService_SetUrl_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
-func _UrlService_SetProxy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ProxyRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UrlServiceServer).SetProxy(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/rpc.UrlService/SetProxy",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UrlServiceServer).SetProxy(ctx, req.(*ProxyRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _UrlService_GetAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(empty.Empty)
 	if err := dec(in); err != nil {
@@ -163,6 +173,42 @@ func _UrlService_GetAll_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UrlServiceServer).GetAll(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UrlService_DeleteUrl_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UrlRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UrlServiceServer).DeleteUrl(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.UrlService/DeleteUrl",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UrlServiceServer).DeleteUrl(ctx, req.(*UrlRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UrlService_SetProxy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProxyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UrlServiceServer).SetProxy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.UrlService/SetProxy",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UrlServiceServer).SetProxy(ctx, req.(*ProxyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -185,6 +231,24 @@ func _UrlService_GetAllProxy_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UrlService_DeleteProxy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProxyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UrlServiceServer).DeleteProxy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.UrlService/DeleteProxy",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UrlServiceServer).DeleteProxy(ctx, req.(*ProxyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UrlService_ServiceDesc is the grpc.ServiceDesc for UrlService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -197,16 +261,24 @@ var UrlService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _UrlService_SetUrl_Handler,
 		},
 		{
-			MethodName: "SetProxy",
-			Handler:    _UrlService_SetProxy_Handler,
-		},
-		{
 			MethodName: "GetAll",
 			Handler:    _UrlService_GetAll_Handler,
 		},
 		{
+			MethodName: "DeleteUrl",
+			Handler:    _UrlService_DeleteUrl_Handler,
+		},
+		{
+			MethodName: "SetProxy",
+			Handler:    _UrlService_SetProxy_Handler,
+		},
+		{
 			MethodName: "GetAllProxy",
 			Handler:    _UrlService_GetAllProxy_Handler,
+		},
+		{
+			MethodName: "DeleteProxy",
+			Handler:    _UrlService_DeleteProxy_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

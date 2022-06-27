@@ -17,6 +17,12 @@ func (monitor *UrlService) SetUrl(c context.Context, request *rpc.UrlRequest) (*
 	return &rpc.UrlResponse{Result: "ok"}, err
 }
 
+func (monitor *UrlService) DeleteUrl(c context.Context, request *rpc.UrlRequest) (*rpc.UrlResponse, error) {
+	err := httpMonitor.DeleteUrl(request.Url)
+
+	return &rpc.UrlResponse{Result: "ok"}, err
+}
+
 func (monitor *UrlService) SetProxy(c context.Context, request *rpc.ProxyRequest) (*rpc.ProxyResponse, error) {
 	err := httpMonitor.SetUrlProxy(request.GetProxy())
 
@@ -46,4 +52,10 @@ func (monitor *UrlService) GetAllProxy(c context.Context, _ *empty.Empty) (*rpc.
 	} else {
 		return &rpc.ProxyListResponse{ProxyList: proxyList}, nil
 	}
+}
+
+func (monitor *UrlService) DeleteProxy(c context.Context, request *rpc.ProxyRequest) (*rpc.ProxyResponse, error) {
+	err := httpMonitor.DeleteUrl(request.Proxy)
+
+	return &rpc.ProxyResponse{Result: "ok"}, err
 }

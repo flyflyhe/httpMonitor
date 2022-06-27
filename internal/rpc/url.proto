@@ -8,9 +8,12 @@ option go_package = "internal/rpc";
 
 service UrlService {
   rpc SetUrl(UrlRequest) returns (UrlResponse);
-  rpc SetProxy(ProxyRequest) returns (ProxyResponse);
   rpc GetAll(google.protobuf.Empty) returns (UrlListResponse);
+  rpc DeleteUrl(UrlRequest) returns (UrlResponse);
+
+  rpc SetProxy(ProxyRequest) returns (ProxyResponse);
   rpc GetAllProxy(google.protobuf.Empty) returns (ProxyListResponse);
+  rpc DeleteProxy(ProxyRequest) returns (ProxyResponse);
 }
 
 message UrlRequest {

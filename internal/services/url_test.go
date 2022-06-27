@@ -54,6 +54,14 @@ func TestUrlList(t *testing.T) {
 			if !urlExist {
 				t.Errorf("期望%s 未取到", url)
 			}
+
+			if res, err := rpcClient.DeleteUrl(context.Background(), &rpc.UrlRequest{Url: url}); err != nil {
+				t.Error(err.Error())
+			} else {
+				if res.Result != "ok" {
+					t.Errorf("期望ok 获取%s", res.Result)
+				}
+			}
 		}
 	}
 }
