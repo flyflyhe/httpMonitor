@@ -28,9 +28,9 @@ func (monitor *MonitorServer) Monitor(req *rpc.MonitorRequest, srv rpc.MonitorSe
 		} else {
 			go func() {
 				for url, interval := range urls {
-					tw.AddCron(time.Duration(int64(interval))*time.Millisecond, func() {
+					tw.AddCron(time.Duration(interval)*time.Millisecond, func() {
 						if result, err := httpMonitor.Monitor(url); err != nil {
-							log.Debug().Str("line 31", err.Error())
+							log.Debug().Str("line 31", err.Error()).Send()
 						} else {
 							resultJson, _ := json.Marshal(result)
 							q <- [2]string{url, string(resultJson)}
@@ -53,7 +53,7 @@ func (monitor *MonitorServer) Monitor(req *rpc.MonitorRequest, srv rpc.MonitorSe
 				return err
 			}
 		default:
-			time.Sleep(1 * time.Second)
+			time.Sleep(1 * time.Second) //防止频繁发送
 			err := srv.Send(&rpc.MonitorResponse{
 				Result: "sleep",
 			})
