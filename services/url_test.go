@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"github.com/flyflyhe/httpMonitor/internal/rpc"
+	rpc2 "github.com/flyflyhe/httpMonitor/rpc"
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
 	"testing"
@@ -27,10 +27,10 @@ func TestUrlList(t *testing.T) {
 	}
 	defer conn.Close()
 
-	rpcClient := rpc.NewUrlServiceClient(conn)
+	rpcClient := rpc2.NewUrlServiceClient(conn)
 	url := "https://www.baidu.com"
 	t.Log("获取rpcClient\n")
-	if res, err := rpcClient.SetUrl(context.Background(), &rpc.UrlRequest{Url: url, Interval: 1000}); err != nil {
+	if res, err := rpcClient.SetUrl(context.Background(), &rpc2.UrlRequest{Url: url, Interval: 1000}); err != nil {
 		t.Log(err, "\n")
 	} else {
 		t.Log(res.Result, "\n")
@@ -55,7 +55,7 @@ func TestUrlList(t *testing.T) {
 				t.Errorf("期望%s 未取到", url)
 			}
 
-			if res, err := rpcClient.DeleteUrl(context.Background(), &rpc.UrlRequest{Url: url}); err != nil {
+			if res, err := rpcClient.DeleteUrl(context.Background(), &rpc2.UrlRequest{Url: url}); err != nil {
 				t.Error(err.Error())
 			} else {
 				if res.Result != "ok" {

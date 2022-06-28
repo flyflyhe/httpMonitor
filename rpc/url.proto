@@ -3,7 +3,7 @@ package rpc;
 
 import "google/protobuf/empty.proto";
 
-option go_package = "internal/rpc";
+option go_package = "/rpc";
 
 
 service UrlService {

@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"github.com/flyflyhe/httpMonitor/internal/rpc"
+	rpc2 "github.com/flyflyhe/httpMonitor/rpc"
 	"google.golang.org/grpc"
 	"io"
 	"log"
@@ -33,10 +33,10 @@ func TestSimple(t *testing.T) {
 	defer conn.Close()
 
 	// 创建发送结构体
-	req := rpc.SimpleRequest{
+	req := rpc2.SimpleRequest{
 		Data: "stream server grpc ",
 	}
-	grpcClient := rpc.NewStreamServerClient(conn)
+	grpcClient := rpc2.NewStreamServerClient(conn)
 	// 调用我们的服务(ListValue方法)
 	stream, err := grpcClient.ListValue(context.Background(), &req)
 	if err != nil {
@@ -78,20 +78,20 @@ func TestMonitor(t *testing.T) {
 	}
 	defer conn.Close()
 
-	rpcClient := rpc.NewMonitorServerClient(conn)
-	urlRpcClient := rpc.NewUrlServiceClient(conn)
-	monitorStream, err := rpcClient.Start(context.Background(), &rpc.MonitorRequest{Operate: "start"})
+	rpcClient := rpc2.NewMonitorServerClient(conn)
+	urlRpcClient := rpc2.NewUrlServiceClient(conn)
+	monitorStream, err := rpcClient.Start(context.Background(), &rpc2.MonitorRequest{Operate: "start"})
 	if err != nil {
 		t.Log(err)
 	} else {
 		i := 0
 		for {
 			if i == 5 {
-				urlRpcClient.SetUrl(context.Background(), &rpc.UrlRequest{Url: "https://www.zhihu.com", Interval: 1000})
+				urlRpcClient.SetUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.zhihu.com", Interval: 1000})
 			}
 
 			if i == 10 {
-				urlRpcClient.DeleteUrl(context.Background(), &rpc.UrlRequest{Url: "https://www.zhihu.com"})
+				urlRpcClient.DeleteUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.zhihu.com"})
 			}
 			//Recv() 方法接收服务端消息，默认每次Recv()最大消息长度为`1024*1024*4`bytes(4M)
 			res, err := monitorStream.Recv()
@@ -133,9 +133,9 @@ func TestUrlClient(t *testing.T) {
 	defer conn.Close()
 
 	ctx := context.Background()
-	rpcClient := rpc.NewUrlServiceClient(conn)
+	rpcClient := rpc2.NewUrlServiceClient(conn)
 	log.Println("获取rpcClient")
-	if res, err := rpcClient.SetUrl(ctx, &rpc.UrlRequest{Url: "https://www.baidu.com", Interval: 1000}); err != nil {
+	if res, err := rpcClient.SetUrl(ctx, &rpc2.UrlRequest{Url: "https://www.baidu.com", Interval: 1000}); err != nil {
 		log.Println(err)
 	} else {
 		log.Println(res.GetResult())

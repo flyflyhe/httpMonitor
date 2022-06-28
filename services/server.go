@@ -1,7 +1,7 @@
 package services
 
 import (
-	"github.com/flyflyhe/httpMonitor/internal/rpc"
+	rpc2 "github.com/flyflyhe/httpMonitor/rpc"
 	"google.golang.org/grpc"
 	"log"
 	"math"
@@ -24,9 +24,9 @@ func Start(port string) {
 		grpc.MaxRecvMsgSize(math.MaxInt64))
 
 	//注册服务
-	rpc.RegisterUrlServiceServer(s, &UrlService{})
-	rpc.RegisterMonitorServerServer(s, &MonitorServer{})
-	rpc.RegisterStreamServerServer(s, &StreamService{})
+	rpc2.RegisterUrlServiceServer(s, &UrlService{})
+	rpc2.RegisterMonitorServerServer(s, &MonitorServer{})
+	rpc2.RegisterStreamServerServer(s, &StreamService{})
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

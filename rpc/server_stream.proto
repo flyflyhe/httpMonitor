@@ -1,7 +1,7 @@
 syntax = "proto3";
 package rpc;
 
-option go_package = "internal/rpc";
+option go_package = "/rpc";
 
 // 定义我们的服务（可定义多个服务,每个服务可定义多个接口）
 service StreamServer{

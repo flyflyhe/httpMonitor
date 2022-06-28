@@ -4,16 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/flyflyhe/httpMonitor"
-	"github.com/flyflyhe/httpMonitor/internal/rpc"
+	rpc2 "github.com/flyflyhe/httpMonitor/rpc"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/rs/zerolog/log"
 )
 
 type UrlService struct {
-	rpc.UnimplementedUrlServiceServer
+	rpc2.UnimplementedUrlServiceServer
 }
 
-func (monitor *UrlService) SetUrl(c context.Context, request *rpc.UrlRequest) (*rpc.UrlResponse, error) {
+func (monitor *UrlService) SetUrl(c context.Context, request *rpc2.UrlRequest) (*rpc2.UrlResponse, error) {
 	defer func() {
 		if err := recover(); err != nil {
 			errMsg, _ := json.Marshal(err)
@@ -25,10 +25,10 @@ func (monitor *UrlService) SetUrl(c context.Context, request *rpc.UrlRequest) (*
 	if MonitorStart && MonitorTaskChan != nil {
 		MonitorTaskChan <- &MonitorTask{request, true}
 	}
-	return &rpc.UrlResponse{Result: "ok"}, err
+	return &rpc2.UrlResponse{Result: "ok"}, err
 }
 
-func (monitor *UrlService) DeleteUrl(c context.Context, request *rpc.UrlRequest) (*rpc.UrlResponse, error) {
+func (monitor *UrlService) DeleteUrl(c context.Context, request *rpc2.UrlRequest) (*rpc2.UrlResponse, error) {
 	defer func() {
 		if err := recover(); err != nil {
 			errMsg, _ := json.Marshal(err)
@@ -39,19 +39,19 @@ func (monitor *UrlService) DeleteUrl(c context.Context, request *rpc.UrlRequest)
 	if MonitorStart && MonitorTaskChan != nil {
 		MonitorTaskChan <- &MonitorTask{request, false}
 	}
-	return &rpc.UrlResponse{Result: "ok"}, err
+	return &rpc2.UrlResponse{Result: "ok"}, err
 }
 
-func (monitor *UrlService) SetProxy(c context.Context, request *rpc.ProxyRequest) (*rpc.ProxyResponse, error) {
+func (monitor *UrlService) SetProxy(c context.Context, request *rpc2.ProxyRequest) (*rpc2.ProxyResponse, error) {
 	err := httpMonitor.SetUrlProxy(request.GetProxy())
 
-	return &rpc.ProxyResponse{Result: "ok"}, err
+	return &rpc2.ProxyResponse{Result: "ok"}, err
 }
 
-func (monitor *UrlService) GetAll(c context.Context, _ *empty.Empty) (*rpc.UrlListResponse, error) {
+func (monitor *UrlService) GetAll(c context.Context, _ *empty.Empty) (*rpc2.UrlListResponse, error) {
 	if urls, err := httpMonitor.GetAllUrls(); err != nil {
 		log.Error().Caller().Msg(err.Error())
-		return &rpc.UrlListResponse{}, err
+		return &rpc2.UrlListResponse{}, err
 	} else {
 		urlList := make([]string, len(urls))
 		i := 0
@@ -60,21 +60,21 @@ func (monitor *UrlService) GetAll(c context.Context, _ *empty.Empty) (*rpc.UrlLi
 			i++
 		}
 
-		return &rpc.UrlListResponse{Urls: urlList}, nil
+		return &rpc2.UrlListResponse{Urls: urlList}, nil
 	}
 }
 
-func (monitor *UrlService) GetAllProxy(c context.Context, _ *empty.Empty) (*rpc.ProxyListResponse, error) {
+func (monitor *UrlService) GetAllProxy(c context.Context, _ *empty.Empty) (*rpc2.ProxyListResponse, error) {
 	if proxyList, err := httpMonitor.GetAllProxyList(); err != nil {
 		log.Error().Caller().Msg(err.Error())
-		return &rpc.ProxyListResponse{}, err
+		return &rpc2.ProxyListResponse{}, err
 	} else {
-		return &rpc.ProxyListResponse{ProxyList: proxyList}, nil
+		return &rpc2.ProxyListResponse{ProxyList: proxyList}, nil
 	}
 }
 
-func (monitor *UrlService) DeleteProxy(c context.Context, request *rpc.ProxyRequest) (*rpc.ProxyResponse, error) {
+func (monitor *UrlService) DeleteProxy(c context.Context, request *rpc2.ProxyRequest) (*rpc2.ProxyResponse, error) {
 	err := httpMonitor.DeleteUrl(request.Proxy)
 
-	return &rpc.ProxyResponse{Result: "ok"}, err
+	return &rpc2.ProxyResponse{Result: "ok"}, err
 }

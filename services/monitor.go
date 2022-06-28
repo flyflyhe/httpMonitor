@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/flyflyhe/httpMonitor"
-	"github.com/flyflyhe/httpMonitor/internal/rpc"
+	rpc2 "github.com/flyflyhe/httpMonitor/rpc"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/rfyiamcool/go-timewheel"
 	"github.com/rs/zerolog/log"
@@ -13,7 +13,7 @@ import (
 )
 
 type MonitorTask struct {
-	*rpc.UrlRequest
+	*rpc2.UrlRequest
 	IsAdd bool
 }
 
@@ -21,7 +21,7 @@ var MonitorTaskChan chan *MonitorTask
 var MonitorStart bool
 
 type MonitorServer struct {
-	rpc.UnimplementedMonitorServerServer
+	rpc2.UnimplementedMonitorServerServer
 	q        chan [2]string
 	stopChan chan struct{}
 	running  bool
@@ -57,7 +57,7 @@ func (monitor *MonitorServer) stop() error {
 	return nil
 }
 
-func (monitor *MonitorServer) Start(req *rpc.MonitorRequest, srv rpc.MonitorServer_StartServer) error {
+func (monitor *MonitorServer) Start(req *rpc2.MonitorRequest, srv rpc2.MonitorServer_StartServer) error {
 	if err := monitor.start(); err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (monitor *MonitorServer) Start(req *rpc.MonitorRequest, srv rpc.MonitorServ
 	for {
 		select {
 		case mData := <-monitor.q:
-			err := srv.Send(&rpc.MonitorResponse{
+			err := srv.Send(&rpc2.MonitorResponse{
 				Result: mData[1],
 				Url:    mData[0],
 			})
@@ -116,7 +116,7 @@ func (monitor *MonitorServer) Start(req *rpc.MonitorRequest, srv rpc.MonitorServ
 			return monitor.stop()
 		default:
 			time.Sleep(1 * time.Second) //防止频繁发送
-			err := srv.Send(&rpc.MonitorResponse{
+			err := srv.Send(&rpc2.MonitorResponse{
 				Result: "sleep",
 			})
 			if err != nil {
