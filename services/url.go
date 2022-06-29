@@ -74,7 +74,7 @@ func (monitor *UrlService) GetAllProxy(c context.Context, _ *empty.Empty) (*rpc2
 }
 
 func (monitor *UrlService) DeleteProxy(c context.Context, request *rpc2.ProxyRequest) (*rpc2.ProxyResponse, error) {
-	err := httpMonitor.DeleteUrl(request.Proxy)
+	err := httpMonitor.DeleteProxy(request.Proxy)
 
 	return &rpc2.ProxyResponse{Result: "ok"}, err
 }
