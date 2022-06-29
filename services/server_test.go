@@ -88,10 +88,12 @@ func TestMonitor(t *testing.T) {
 		for {
 			if i == 5 {
 				urlRpcClient.SetUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.zhihu.com", Interval: 1000})
+				urlRpcClient.SetUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.www.baidu.com", Interval: 1000})
 			}
 
-			if i == 10 {
+			if i == 100 {
 				urlRpcClient.DeleteUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.zhihu.com"})
+				urlRpcClient.DeleteUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.baidu.com"})
 			}
 			//Recv() 方法接收服务端消息，默认每次Recv()最大消息长度为`1024*1024*4`bytes(4M)
 			res, err := monitorStream.Recv()

@@ -8,6 +8,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/rfyiamcool/go-timewheel"
 	"github.com/rs/zerolog/log"
+	"runtime/debug"
 	"time"
 	"unsafe"
 )
@@ -64,6 +65,7 @@ func (monitor *MonitorServer) Start(req *rpc2.MonitorRequest, srv rpc2.MonitorSe
 	addTaskFunc := func(url string) {
 		defer func() {
 			if err := recover(); err != nil {
+				debug.PrintStack()
 				errJson, _ := json.Marshal(err)
 				log.Error().Caller().Msg(string(errJson))
 			}
@@ -82,13 +84,14 @@ func (monitor *MonitorServer) Start(req *rpc2.MonitorRequest, srv rpc2.MonitorSe
 		return err
 	} else {
 		go func() {
-			for url, interval := range urls {
+			for url, interval := range urls { //range缺陷
 				//addCron 返回task 如果想加删除功能 需要保存url 与 task的关系
+				urlCopy := url
 				task := monitor.tw.AddCron(time.Duration(interval)*time.Millisecond, func() {
-					addTaskFunc(url)
+					addTaskFunc(urlCopy)
 				})
 
-				monitor.tasks[url] = task
+				monitor.tasks[urlCopy] = task
 			}
 
 			monitor.tw.Start()
