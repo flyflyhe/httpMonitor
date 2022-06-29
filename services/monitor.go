@@ -51,7 +51,7 @@ func (monitor *MonitorServer) stop() error {
 	monitor.tw.Stop()
 	monitor.running = false
 	MonitorStart = false
-	//close(monitor.q) 防止数据未完全写入
+	close(monitor.q)
 	close(monitor.stopChan)
 	close(MonitorTaskChan)
 	return nil
@@ -62,11 +62,19 @@ func (monitor *MonitorServer) Start(req *rpc2.MonitorRequest, srv rpc2.MonitorSe
 		return err
 	}
 	addTaskFunc := func(url string) {
+		defer func() {
+			if err := recover(); err != nil {
+				errJson, _ := json.Marshal(err)
+				log.Error().Caller().Msg(string(errJson))
+			}
+		}()
 		if result, err := httpMonitor.Monitor(url); err != nil {
 			log.Debug().Str("line 31", err.Error()).Send()
 		} else {
 			resultJson, _ := json.Marshal(result)
-			monitor.q <- [2]string{url, string(resultJson)}
+			if monitor.running {
+				monitor.q <- [2]string{url, string(resultJson)}
+			}
 		}
 	}
 
