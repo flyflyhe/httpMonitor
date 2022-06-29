@@ -25,6 +25,7 @@ const _ = grpc.SupportPackageIsVersion7
 type UrlServiceClient interface {
 	SetUrl(ctx context.Context, in *UrlRequest, opts ...grpc.CallOption) (*UrlResponse, error)
 	GetAll(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*UrlListResponse, error)
+	GetAllDomainAndInterval(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*UrlIntervalResponse, error)
 	DeleteUrl(ctx context.Context, in *UrlRequest, opts ...grpc.CallOption) (*UrlResponse, error)
 	SetProxy(ctx context.Context, in *ProxyRequest, opts ...grpc.CallOption) (*ProxyResponse, error)
 	GetAllProxy(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*ProxyListResponse, error)
@@ -51,6 +52,15 @@ func (c *urlServiceClient) SetUrl(ctx context.Context, in *UrlRequest, opts ...g
 func (c *urlServiceClient) GetAll(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*UrlListResponse, error) {
 	out := new(UrlListResponse)
 	err := c.cc.Invoke(ctx, "/rpc.UrlService/GetAll", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *urlServiceClient) GetAllDomainAndInterval(ctx context.Context, in *empty.Empty, opts ...grpc.CallOption) (*UrlIntervalResponse, error) {
+	out := new(UrlIntervalResponse)
+	err := c.cc.Invoke(ctx, "/rpc.UrlService/GetAllDomainAndInterval", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +109,7 @@ func (c *urlServiceClient) DeleteProxy(ctx context.Context, in *ProxyRequest, op
 type UrlServiceServer interface {
 	SetUrl(context.Context, *UrlRequest) (*UrlResponse, error)
 	GetAll(context.Context, *empty.Empty) (*UrlListResponse, error)
+	GetAllDomainAndInterval(context.Context, *empty.Empty) (*UrlIntervalResponse, error)
 	DeleteUrl(context.Context, *UrlRequest) (*UrlResponse, error)
 	SetProxy(context.Context, *ProxyRequest) (*ProxyResponse, error)
 	GetAllProxy(context.Context, *empty.Empty) (*ProxyListResponse, error)
@@ -115,6 +126,9 @@ func (UnimplementedUrlServiceServer) SetUrl(context.Context, *UrlRequest) (*UrlR
 }
 func (UnimplementedUrlServiceServer) GetAll(context.Context, *empty.Empty) (*UrlListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAll not implemented")
+}
+func (UnimplementedUrlServiceServer) GetAllDomainAndInterval(context.Context, *empty.Empty) (*UrlIntervalResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllDomainAndInterval not implemented")
 }
 func (UnimplementedUrlServiceServer) DeleteUrl(context.Context, *UrlRequest) (*UrlResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUrl not implemented")
@@ -173,6 +187,24 @@ func _UrlService_GetAll_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UrlServiceServer).GetAll(ctx, req.(*empty.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UrlService_GetAllDomainAndInterval_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(empty.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UrlServiceServer).GetAllDomainAndInterval(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.UrlService/GetAllDomainAndInterval",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UrlServiceServer).GetAllDomainAndInterval(ctx, req.(*empty.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -263,6 +295,10 @@ var UrlService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAll",
 			Handler:    _UrlService_GetAll_Handler,
+		},
+		{
+			MethodName: "GetAllDomainAndInterval",
+			Handler:    _UrlService_GetAllDomainAndInterval_Handler,
 		},
 		{
 			MethodName: "DeleteUrl",

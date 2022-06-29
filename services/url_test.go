@@ -4,27 +4,64 @@ import (
 	"context"
 	rpc2 "github.com/flyflyhe/httpMonitor/rpc"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"testing"
 	"time"
 )
+
+func TestUrlService_GetAllDomainAndInterval(t *testing.T) {
+	go Start(address)
+	time.Sleep(1 * time.Second) //等待服务启动
+
+	conn, err := GetRpcConn()
+	if err != nil {
+		t.Error(err)
+	}
+	defer conn.Close()
+
+	rpcClient := rpc2.NewUrlServiceClient(conn)
+	if _, err = rpcClient.SetUrl(context.Background(), &rpc2.UrlRequest{Url: "a", Interval: 1}); err != nil {
+		t.Error(err)
+	}
+
+	if _, err = rpcClient.SetUrl(context.Background(), &rpc2.UrlRequest{Url: "b", Interval: 2}); err != nil {
+		t.Error(err)
+	}
+
+	if m, err := rpcClient.GetAllDomainAndInterval(context.Background(), &empty.Empty{}); err != nil {
+		t.Error(err)
+	} else {
+		assert.Contains(t, m.UrlInterval, "a")
+		assert.Contains(t, m.UrlInterval, "b")
+		assert.Equal(t, m.UrlInterval["a"], int32(1))
+		assert.Equal(t, m.UrlInterval["b"], int32(2))
+	}
+}
+
+func GetRpcConn() (*grpc.ClientConn, error) {
+	tlsCredentials, err := loadClientTLSCredentials()
+	if err != nil {
+		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(tlsCredentials))
+	return conn, err
+}
 
 func TestUrlList(t *testing.T) {
 
 	go Start(address)
 
 	time.Sleep(1 * time.Second) //等待服务启动
-	tlsCredentials, err := loadClientTLSCredentials()
+
+	conn, err := GetRpcConn()
 	if err != nil {
-		t.Fatal("cannot load TLS credentials: ", err)
+		t.Error(err)
 	}
-	if err != nil {
-		t.Fatalf("credentials.NewClientTLSFromFile err: %v", err)
-	}
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(tlsCredentials))
-	if err != nil {
-		t.Fatalf("did not connect: %v", err)
-	}
+
 	defer conn.Close()
 
 	rpcClient := rpc2.NewUrlServiceClient(conn)

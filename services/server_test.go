@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	rpc2 "github.com/flyflyhe/httpMonitor/rpc"
-	"google.golang.org/grpc"
 	"io"
 	"log"
 	"testing"
@@ -19,14 +18,7 @@ func TestSimple(t *testing.T) {
 	go Start(address)
 
 	time.Sleep(2 * time.Second) //等待服务启动
-	tlsCredentials, err := loadClientTLSCredentials()
-	if err != nil {
-		t.Fatal("cannot load TLS credentials: ", err)
-	}
-	if err != nil {
-		t.Fatalf("credentials.NewClientTLSFromFile err: %v", err)
-	}
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(tlsCredentials))
+	conn, err := GetRpcConn()
 	if err != nil {
 		t.Fatalf("did not connect: %v", err)
 	}
@@ -65,14 +57,7 @@ func TestMonitor(t *testing.T) {
 	go Start(address)
 
 	time.Sleep(2 * time.Second) //等待服务启动
-	tlsCredentials, err := loadClientTLSCredentials()
-	if err != nil {
-		t.Fatal("cannot load TLS credentials: ", err)
-	}
-	if err != nil {
-		t.Fatalf("credentials.NewClientTLSFromFile err: %v", err)
-	}
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(tlsCredentials))
+	conn, err := GetRpcConn()
 	if err != nil {
 		t.Fatalf("did not connect: %v", err)
 	}
@@ -87,15 +72,15 @@ func TestMonitor(t *testing.T) {
 		i := 0
 		for {
 			if i == 5 {
-				urlRpcClient.SetUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.zhihu.com", Interval: 1000})
-				urlRpcClient.SetUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.www.baidu.com", Interval: 1000})
+				_, _ = urlRpcClient.SetUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.zhihu.com", Interval: 1000})
+				_, _ = urlRpcClient.SetUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.www.baidu.com", Interval: 1000})
 			}
 
 			if i == 100 {
-				urlRpcClient.DeleteUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.zhihu.com"})
-				urlRpcClient.DeleteUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.baidu.com"})
+				_, _ = urlRpcClient.DeleteUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.zhihu.com"})
+				_, _ = urlRpcClient.DeleteUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.baidu.com"})
 			}
-			//Recv() 方法接收服务端消息，默认每次Recv()最大消息长度为`1024*1024*4`bytes(4M)
+
 			res, err := monitorStream.Recv()
 
 			if err != nil {
@@ -121,14 +106,7 @@ func TestUrlClient(t *testing.T) {
 	go Start(address)
 
 	time.Sleep(1 * time.Second) //等待服务启动
-	tlsCredentials, err := loadClientTLSCredentials()
-	if err != nil {
-		log.Fatal("cannot load TLS credentials: ", err)
-	}
-	if err != nil {
-		log.Fatalf("credentials.NewClientTLSFromFile err: %v", err)
-	}
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(tlsCredentials))
+	conn, err := GetRpcConn()
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}

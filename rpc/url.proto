@@ -9,6 +9,7 @@ option go_package = "/rpc";
 service UrlService {
   rpc SetUrl(UrlRequest) returns (UrlResponse);
   rpc GetAll(google.protobuf.Empty) returns (UrlListResponse);
+  rpc GetAllDomainAndInterval(google.protobuf.Empty) returns (UrlIntervalResponse);
   rpc DeleteUrl(UrlRequest) returns (UrlResponse);
 
   rpc SetProxy(ProxyRequest) returns (ProxyResponse);
@@ -27,6 +28,10 @@ message UrlResponse {
 
 message UrlListResponse {
   repeated string urls = 1;
+}
+
+message UrlIntervalResponse {
+  map<string, int32> UrlInterval = 1;
 }
 
 message ProxyRequest {

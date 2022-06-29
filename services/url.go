@@ -64,6 +64,16 @@ func (monitor *UrlService) GetAll(c context.Context, _ *empty.Empty) (*rpc2.UrlL
 	}
 }
 
+func (monitor *UrlService) GetAllDomainAndInterval(c context.Context, _ *empty.Empty) (*rpc2.UrlIntervalResponse, error) {
+	if urls, err := httpMonitor.GetAllUrls(); err != nil {
+		log.Error().Caller().Msg(err.Error())
+		return &rpc2.UrlIntervalResponse{}, err
+	} else {
+
+		return &rpc2.UrlIntervalResponse{UrlInterval: urls}, nil
+	}
+}
+
 func (monitor *UrlService) GetAllProxy(c context.Context, _ *empty.Empty) (*rpc2.ProxyListResponse, error) {
 	if proxyList, err := httpMonitor.GetAllProxyList(); err != nil {
 		log.Error().Caller().Msg(err.Error())
