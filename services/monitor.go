@@ -23,7 +23,7 @@ var MonitorStart bool
 
 type MonitorServer struct {
 	rpc2.UnimplementedMonitorServerServer
-	q        chan [2]string
+	q        chan *rpc2.MonitorResponse
 	stopChan chan struct{}
 	running  bool
 	tw       *timewheel.TimeWheel
@@ -37,7 +37,7 @@ func (monitor *MonitorServer) start() error {
 		if err != nil {
 			return err
 		}
-		monitor.q = make(chan [2]string, 10)
+		monitor.q = make(chan *rpc2.MonitorResponse, 10)
 		monitor.stopChan = make(chan struct{})
 		monitor.running = true
 		monitor.tasks = make(map[string]*timewheel.Task)
@@ -73,9 +73,8 @@ func (monitor *MonitorServer) Start(req *rpc2.MonitorRequest, srv rpc2.MonitorSe
 		if result, err := httpMonitor.Monitor(url); err != nil {
 			log.Debug().Str("line 31", err.Error()).Send()
 		} else {
-			resultJson, _ := json.Marshal(result)
 			if monitor.running {
-				monitor.q <- [2]string{url, string(resultJson)}
+				monitor.q <- &rpc2.MonitorResponse{Url: url, Result: result}
 			}
 		}
 	}
@@ -100,10 +99,7 @@ func (monitor *MonitorServer) Start(req *rpc2.MonitorRequest, srv rpc2.MonitorSe
 	for {
 		select {
 		case mData := <-monitor.q:
-			err := srv.Send(&rpc2.MonitorResponse{
-				Result: mData[1],
-				Url:    mData[0],
-			})
+			err := srv.Send(mData)
 			if err != nil {
 				return err
 			}
@@ -128,7 +124,7 @@ func (monitor *MonitorServer) Start(req *rpc2.MonitorRequest, srv rpc2.MonitorSe
 		default:
 			time.Sleep(1 * time.Second) //防止频繁发送
 			err := srv.Send(&rpc2.MonitorResponse{
-				Result: "sleep",
+				Result: nil,
 			})
 			if err != nil {
 				return err
