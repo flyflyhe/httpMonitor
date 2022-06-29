@@ -51,7 +51,7 @@ func (monitor *MonitorServer) stop() error {
 	monitor.tw.Stop()
 	monitor.running = false
 	MonitorStart = false
-	close(monitor.q)
+	//close(monitor.q) 防止数据未完全写入
 	close(monitor.stopChan)
 	close(MonitorTaskChan)
 	return nil
