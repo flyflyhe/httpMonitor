@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/flyflyhe/httpMonitor"
-	rpc2 "github.com/flyflyhe/httpMonitor/rpc"
+	"github.com/flyflyhe/httpMonitor/rpc"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/rfyiamcool/go-timewheel"
 	"github.com/rs/zerolog/log"
@@ -14,7 +14,7 @@ import (
 )
 
 type MonitorTask struct {
-	*rpc2.UrlRequest
+	*rpc.UrlRequest
 	IsAdd bool
 }
 
@@ -22,8 +22,8 @@ var MonitorTaskChan chan *MonitorTask
 var MonitorStart bool
 
 type MonitorServer struct {
-	rpc2.UnimplementedMonitorServerServer
-	q        chan *rpc2.MonitorResponse
+	rpc.UnimplementedMonitorServerServer
+	q        chan *rpc.MonitorResponse
 	stopChan chan struct{}
 	running  bool
 	tw       *timewheel.TimeWheel
@@ -37,7 +37,7 @@ func (monitor *MonitorServer) start() error {
 		if err != nil {
 			return err
 		}
-		monitor.q = make(chan *rpc2.MonitorResponse, 10)
+		monitor.q = make(chan *rpc.MonitorResponse, 10)
 		monitor.stopChan = make(chan struct{})
 		monitor.running = true
 		monitor.tasks = make(map[string]*timewheel.Task)
@@ -58,7 +58,7 @@ func (monitor *MonitorServer) stop() error {
 	return nil
 }
 
-func (monitor *MonitorServer) Start(req *rpc2.MonitorRequest, srv rpc2.MonitorServer_StartServer) error {
+func (monitor *MonitorServer) Start(req *rpc.MonitorRequest, srv rpc.MonitorServer_StartServer) error {
 	if err := monitor.start(); err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func (monitor *MonitorServer) Start(req *rpc2.MonitorRequest, srv rpc2.MonitorSe
 			log.Debug().Str("line 31", err.Error()).Send()
 		} else {
 			if monitor.running {
-				monitor.q <- &rpc2.MonitorResponse{Url: url, Result: result}
+				monitor.q <- &rpc.MonitorResponse{Url: url, Result: result}
 			}
 		}
 	}
@@ -123,7 +123,7 @@ func (monitor *MonitorServer) Start(req *rpc2.MonitorRequest, srv rpc2.MonitorSe
 			return monitor.stop()
 		default:
 			time.Sleep(1 * time.Second) //防止频繁发送
-			err := srv.Send(&rpc2.MonitorResponse{
+			err := srv.Send(&rpc.MonitorResponse{
 				Result: nil,
 			})
 			if err != nil {

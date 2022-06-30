@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	rpc2 "github.com/flyflyhe/httpMonitor/rpc"
+	"github.com/flyflyhe/httpMonitor/rpc"
 	"io"
 	"log"
 	"testing"
@@ -25,10 +25,10 @@ func TestSimple(t *testing.T) {
 	defer conn.Close()
 
 	// 创建发送结构体
-	req := rpc2.SimpleRequest{
+	req := rpc.SimpleRequest{
 		Data: "stream server grpc ",
 	}
-	grpcClient := rpc2.NewStreamServerClient(conn)
+	grpcClient := rpc.NewStreamServerClient(conn)
 	// 调用我们的服务(ListValue方法)
 	stream, err := grpcClient.ListValue(context.Background(), &req)
 	if err != nil {
@@ -63,22 +63,22 @@ func TestMonitor(t *testing.T) {
 	}
 	defer conn.Close()
 
-	rpcClient := rpc2.NewMonitorServerClient(conn)
-	urlRpcClient := rpc2.NewUrlServiceClient(conn)
-	monitorStream, err := rpcClient.Start(context.Background(), &rpc2.MonitorRequest{Operate: "start"})
+	rpcClient := rpc.NewMonitorServerClient(conn)
+	urlRpcClient := rpc.NewUrlServiceClient(conn)
+	monitorStream, err := rpcClient.Start(context.Background(), &rpc.MonitorRequest{Operate: "start"})
 	if err != nil {
 		t.Log(err)
 	} else {
 		i := 0
 		for {
 			if i == 5 {
-				_, _ = urlRpcClient.SetUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.zhihu.com", Interval: 1000})
-				_, _ = urlRpcClient.SetUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.www.baidu.com", Interval: 1000})
+				_, _ = urlRpcClient.SetUrl(context.Background(), &rpc.UrlRequest{Url: "https://www.zhihu.com", Interval: 1000})
+				_, _ = urlRpcClient.SetUrl(context.Background(), &rpc.UrlRequest{Url: "https://www.baidu.com", Interval: 1000})
 			}
 
 			if i == 100 {
-				_, _ = urlRpcClient.DeleteUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.zhihu.com"})
-				_, _ = urlRpcClient.DeleteUrl(context.Background(), &rpc2.UrlRequest{Url: "https://www.baidu.com"})
+				_, _ = urlRpcClient.DeleteUrl(context.Background(), &rpc.UrlRequest{Url: "https://www.zhihu.com"})
+				_, _ = urlRpcClient.DeleteUrl(context.Background(), &rpc.UrlRequest{Url: "https://www.baidu.com"})
 			}
 
 			res, err := monitorStream.Recv()
@@ -113,9 +113,9 @@ func TestUrlClient(t *testing.T) {
 	defer conn.Close()
 
 	ctx := context.Background()
-	rpcClient := rpc2.NewUrlServiceClient(conn)
+	rpcClient := rpc.NewUrlServiceClient(conn)
 	log.Println("获取rpcClient")
-	if res, err := rpcClient.SetUrl(ctx, &rpc2.UrlRequest{Url: "https://www.baidu.com", Interval: 1000}); err != nil {
+	if res, err := rpcClient.SetUrl(ctx, &rpc.UrlRequest{Url: "https://www.baidu.com", Interval: 1000}); err != nil {
 		log.Println(err)
 	} else {
 		log.Println(res.GetResult())
